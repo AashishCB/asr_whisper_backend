@@ -1,6 +1,7 @@
 import ffmpeg
 import numpy as np
 
+from core.logger import Log, Tag
 from speech_to_text.models import base_model
 
 
@@ -36,6 +37,7 @@ def load_audio(file: (str, bytes), sr: int = 16000):
             .run(cmd="ffmpeg", capture_stdout=True, capture_stderr=True, input=inp)
         )
     except ffmpeg.Error as e:
+        Log.e(F"{Tag.EXCEPTION} Failed to load audio: {e.stderr.decode()}")
         raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
 
     return np.frombuffer(out, np.int16).flatten().astype(np.float32) / 32768.0
@@ -44,4 +46,6 @@ def load_audio(file: (str, bytes), sr: int = 16000):
 async def transcribe(file):
     audio = await file.read()
     result = base_model.transcribe(load_audio(audio))
-    return {"data": result['text']}
+    response = {"data": result['text']}
+    Log.i(F"{Tag.SPEECH_TO_TEXT}-{Tag.RESPONSE} {response}")
+    return response

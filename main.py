@@ -1,6 +1,8 @@
 from typing import Annotated
 
 from fastapi import FastAPI, UploadFile, File
+
+from core.logger import Tag, Log
 from speech_to_text.schemas import TextGenerationSchema
 from speech_to_text.text_generation import transcribe
 
@@ -15,6 +17,7 @@ async def root():
 
 @app.post("/speech-to-text", response_model=TextGenerationSchema)
 async def generate_text(file: UploadFile):
+    Log.d(F"{Tag.SPEECH_TO_TEXT} Request Received")
     return await transcribe(file)
 
 
